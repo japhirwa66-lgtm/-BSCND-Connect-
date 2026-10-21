@@ -1,0 +1,23 @@
+# Render Blueprint for a repository that contains only the backend folder's contents.
+services:
+  - type: web
+    name: bscnd-connect-api
+    runtime: node
+    plan: free
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: 20.18.0
+      - key: NODE_ENV
+        value: production
+      - key: TRUST_PROXY
+        value: "1"
+      - key: MONGODB_URI
+        sync: false # MongoDB Atlas connection string
+      - key: CLIENT_ORIGIN
+        sync: false # your Vercel URL(s), comma separated
+      - key: CLOUDINARY_URL
+        sync: false # cloudinary://<api_key>:<api_secret>@<cloud_name>
