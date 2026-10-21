@@ -8,6 +8,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { config } from './config.js';
 import apiRouter from './routes/index.js';
+import { health } from './routes/health.js';
 import { notFound, errorHandler } from './middleware/errors.js';
 
 export function createApp() {
@@ -34,7 +35,11 @@ export function createApp() {
     app.use(cors({ origin: origins, maxAge: 86400 }));
   }
   app.use(compression());
-  if (config.nodeEnv !== 'test') app.use(morgan(config.nodeEnv === 'production' ? 'combined' : 'dev'));
+  // health checks run every few seconds on most hosts: answer them first, unthrottled and unlogged
+  app.get('/health', health);
+  if (config.nodeEnv !== 'test') {
+    app.use(morgan(config.nodeEnv === 'production' ? 'combined' : 'dev', { skip: (req) => req.path === '/health' || req.path === '/api/health' }));
+  }
   app.use(express.json({ limit: '256kb' }));
 
   app.use(
